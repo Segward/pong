@@ -22,11 +22,12 @@ int main() {
         return 1;
     }
 
-    SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+    SDL_SetRenderDrawColor(renderer, 40, 40, 40, 255);
     SDL_RenderClear(renderer);
-    
+    SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);   
+ 
     SDL_Rect rect = { 200, 150, 100, 100 };
-    SDL_RendererDrawRect(renderer, &rect);
+    SDL_RenderDrawRect(renderer, &rect);
     SDL_RenderFillRect(renderer, &rect);
     SDL_RenderPresent(renderer);
 
