@@ -8,7 +8,7 @@ int main() {
         return 1;
     }
 
-    SDL_Window *window = SDL_CreateWindow("Hello SDL2", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 600, 400, SDL_WINDOW_SHOWN);
+    SDL_Window *window = SDL_CreateWindow("Pong", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 600, 400, SDL_WINDOW_SHOWN);
     if (!window) {
         printf("SDL_CreateWindow Error: %s\n", SDL_GetError());
         SDL_Quit();
@@ -58,7 +58,6 @@ int main() {
       frameCount++;
       if (SDL_GetTicks() - startTime >= 1000) {
         snprintf(buffer, sizeof(buffer), "FPS: %d", frameCount);
-        SDL_SetWindowTitle(window, buffer);
         frameCount = 0;
         startTime = SDL_GetTicks();
       }
