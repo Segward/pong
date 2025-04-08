@@ -12,6 +12,9 @@
 
 # Ignore compiled binaries
 *.exe
+*.app
+*.dylib
+*.dll
 
 # Ignore IDE specific files
 *.idea/
