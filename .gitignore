@@ -1,0 +1,18 @@
+# Ignore swap files
+*.swp
+
+# Ignore temporary files
+*.tmp
+
+# Ignore log files
+*.log
+
+# Ignore build artifacts
+*.o
+
+# Ignore compiled binaries
+*.exe
+
+# Ignore IDE specific files
+*.idea/
+*.vscode/
