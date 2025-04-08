@@ -31,7 +31,7 @@ int main() {
         return 1;
     }
 
-    TTF_Font *font = TTF_OpenFont("font/rockwell.ttf", 24);
+    TTF_Font *font = TTF_OpenFont("font/rockwell.ttf", 20);
     if (!font) {
         printf("TTF_OpenFont Error: %s\n", TTF_GetError());
         TTF_Quit();
@@ -65,7 +65,7 @@ int main() {
       SDL_SetRenderDrawColor(renderer, 40, 40, 40, 255);
       SDL_RenderClear(renderer);
 
-      SDL_Surface* surface = TTF_RenderText_Solid(font, buffer, color);
+      SDL_Surface* surface = TTF_RenderText_Blended(font, buffer, color);
       SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
 
       int width, height;
