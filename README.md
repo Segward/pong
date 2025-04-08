@@ -4,7 +4,11 @@ Just started learning SDL2 with C so this is a simple pong game I made to practi
 
 ## Usage
 
-1. Install SDL2 on your system. You can find instructions for your platform [here](https://wiki.libsdl.org/Installation).
+1. Install SDL2 and SDL2_ttf using Homebrew:
+
+```bash
+brew install sdl2 sdl2_ttf
+```
 
 2. Compile the code using the following command:
 
