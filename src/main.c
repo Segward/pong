@@ -31,9 +31,6 @@ int main() {
         return 1;
     }
 
-    SDL_SetRenderDrawColor(renderer, 40, 40, 40, 255);
-    SDL_RenderClear(renderer);
-
     TTF_Font *font = TTF_OpenFont("font/rockwell.ttf", 24);
     if (!font) {
         printf("TTF_OpenFont Error: %s\n", TTF_GetError());
@@ -45,36 +42,9 @@ int main() {
     }
 
     SDL_Color color = { 255, 255, 255, 255 };
-    SDL_Surface *surface = TTF_RenderText_Solid(font, "Hello, SDL2!", color);
-    if (!surface) {
-        printf("TTF_RenderText_Solid Error: %s\n", TTF_GetError());
-        TTF_CloseFont(font);
-        TTF_Quit();
-        SDL_DestroyRenderer(renderer);
-        SDL_DestroyWindow(window);
-        SDL_Quit();
-        return 1;
-    }
-
-    SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer, surface);
-    if (!texture) {
-        printf("SDL_CreateTextureFromSurface Error: %s\n", SDL_GetError());
-        SDL_FreeSurface(surface);
-        TTF_CloseFont(font);
-        TTF_Quit();
-        SDL_DestroyRenderer(renderer);
-        SDL_DestroyWindow(window);
-        SDL_Quit();
-        return 1;
-    }
-
-    int textWidth, textHeight;
-    SDL_QueryTexture(texture, NULL, NULL, &textWidth, &textHeight);
-
-    SDL_Rect textRect = { 100, 100, textWidth, textHeight };
-    SDL_RenderClear(renderer);
-    SDL_RenderCopy(renderer, texture, NULL, &textRect);
-    SDL_RenderPresent(renderer);
+    uint32_t startTime = SDL_GetTicks();
+    int frameCount = 0;
+    char buffer[256];
 
     SDL_Event event;
     int quit = 0;
@@ -84,9 +54,35 @@ int main() {
           quit = 1;
         }
       }
+      
+      frameCount++;
+      if (SDL_GetTicks() - startTime >= 1000) {
+        snprintf(buffer, sizeof(buffer), "FPS: %d", frameCount);
+        SDL_SetWindowTitle(window, buffer);
+        frameCount = 0;
+        startTime = SDL_GetTicks();
+      }
+
+      SDL_SetRenderDrawColor(renderer, 40, 40, 40, 255);
+      SDL_RenderClear(renderer);
+
+      SDL_Surface* surface = TTF_RenderText_Solid(font, buffer, color);
+      SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
+
+      int width, height;
+      SDL_QueryTexture(texture, NULL, NULL, &width, &height);
+      SDL_Rect rect = { 10, 10, width, height };    
+      SDL_RenderCopy(renderer, texture, NULL, &rect);
+
+      SDL_DestroyTexture(texture);
+      SDL_FreeSurface(surface);
+      SDL_RenderPresent(renderer);
     }
 
+    TTF_CloseFont(font);
+    TTF_Quit();
     SDL_DestroyWindow(window);
+    SDL_DestroyRenderer(renderer);
     SDL_Quit();
 
     return 0;
