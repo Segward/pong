@@ -43,6 +43,8 @@ int main() {
 
     int posX = 300;
     int posY = 200;
+    int velX = 0;
+    int velY = 0;
 
     SDL_Color color = { 255, 255, 255, 255 };
     uint32_t startTime = SDL_GetTicks();
@@ -56,22 +58,36 @@ int main() {
         if (event.type == SDL_QUIT) {
           quit = 1;
         }
+
         if (event.type == SDL_KEYDOWN) {
           switch (event.key.keysym.sym) {
             case SDLK_ESCAPE:
               quit = 1;
               break;
             case SDLK_UP:
-              posY -= 15;
+              velY = -5;
               break;
             case SDLK_DOWN:
-              posY += 15;
+              velY = 5;
               break;
             case SDLK_LEFT:
-              posX -= 15;
+              velX = -5;
               break;
             case SDLK_RIGHT:
-              posX += 15;
+              velX = 5;
+              break;
+          }
+        }
+
+        if (event.type == SDL_KEYUP) {
+          switch (event.key.keysym.sym) {
+            case SDLK_UP:
+            case SDLK_DOWN:
+              velY = 0;
+              break;
+            case SDLK_LEFT:
+            case SDLK_RIGHT:
+              velX = 0;
               break;
           }
         }
@@ -94,6 +110,9 @@ int main() {
       SDL_QueryTexture(texture, NULL, NULL, &width, &height);
       SDL_Rect rect = { 10, 10, width, height };    
       SDL_RenderCopy(renderer, texture, NULL, &rect);
+
+      posX += velX;
+      posY += velY;
 
       SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
       SDL_Rect playerRect = {posX,posY, 50, 50};
