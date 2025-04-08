@@ -9,7 +9,7 @@ Just started learning SDL2 with C so this is a simple pong game I made to practi
 2. Compile the code using the following command:
 
 ```bash
-gcc main.c -o pong -I/opt/homebrew/Cellar/sdl2/2.32.4/include -L/opt/homebrew/Cellar/sdl2/2.32.4/lib -lSDL2
+gcc src/main.c -o pong -I/opt/homebrew/Cellar/sdl2/2.32.4/include -L/opt/homebrew/Cellar/sdl2/2.32.4/lib -lSDL2
 ```
 
 3. Run the game:
