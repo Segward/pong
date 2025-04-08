@@ -16,22 +16,21 @@ brew install sdl2 sdl2_ttf
 brew install gcc
 ```
 
-## Compilation
-To compile the code, run the following command in the terminal:
+## Usage
+
+1. To build the project, run the following command in the terminal:
 
 ```bash
 make build
 ```
 
-## Running the Game
-To run the game, execute the following command in the terminal:
+2. To run the game, use the following command:
 
 ```bash
 make run
 ```
 
-## Cleaning Up
-To clean up the compiled files, run the following command in the terminal:
+3. To clean up the build files, use:
 
 ```bash
 make clean
