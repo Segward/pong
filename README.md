@@ -2,7 +2,7 @@
 
 Just started learning SDL2 with C so this is a simple pong game I made to practice.
 
-## Usage
+## Requirements
 
 1. Install SDL2 and SDL2_ttf using Homebrew:
 
@@ -10,14 +10,29 @@ Just started learning SDL2 with C so this is a simple pong game I made to practi
 brew install sdl2 sdl2_ttf
 ```
 
-2. Compile the code using the following command:
+2. Have the gcc compiler installed. You can install it using Homebrew:
 
 ```bash
-gcc -o pong src/main.c -I/opt/homebrew/include -L/opt/homebrew/lib -lSDL2 -lSDL2_ttf
+brew install gcc
 ```
 
-3. Run the game:
+## Compilation
+To compile the code, run the following command in the terminal:
 
 ```bash
-./pong
+make build
+```
+
+## Running the Game
+To run the game, execute the following command in the terminal:
+
+```bash
+make run
+```
+
+## Cleaning Up
+To clean up the compiled files, run the following command in the terminal:
+
+```bash
+make clean
 ```
