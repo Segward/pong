@@ -1,145 +1,120 @@
 #include <SDL2/SDL.h>
-#include <SDL2/SDL_ttf.h>
+#include <GL/glew.h>
 #include <stdio.h>
-#include <math.h>
+#include <stdlib.h>
+
+char* load_file(const char* path) {
+    FILE* file = fopen(path, "rb");
+    if (!file) return NULL;
+
+    fseek(file, 0, SEEK_END);
+    long len = ftell(file);
+    rewind(file);
+
+    char* buffer = malloc(len + 1);
+    fread(buffer, 1, len, file);
+    buffer[len] = '\0';
+
+    fclose(file);
+    return buffer;
+}
+
+GLuint compileShader(GLenum type, const char* src) {
+    GLuint shader = glCreateShader(type);
+    glShaderSource(shader, 1, &src, NULL);
+    glCompileShader(shader);
+    int success;
+    glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
+    if (!success) {
+        char info[512];
+        glGetShaderInfoLog(shader, 512, NULL, info);
+        printf("Shader compile error: %s\n", info);
+    }
+    return shader;
+}
+
+GLuint loadShaderProgram(const char* vertexPath, const char* fragmentPath) {
+    char* vertexSource = load_file(vertexPath);
+    char* fragmentSource = load_file(fragmentPath);
+
+    GLuint vertexShader = compileShader(GL_VERTEX_SHADER, vertexSource);
+    GLuint fragmentShader = compileShader(GL_FRAGMENT_SHADER, fragmentSource);
+
+    GLuint shaderProgram = glCreateProgram();
+    glAttachShader(shaderProgram, vertexShader);
+    glAttachShader(shaderProgram, fragmentShader);
+    glLinkProgram(shaderProgram);
+
+    glDeleteShader(vertexShader);
+    glDeleteShader(fragmentShader);
+
+    return shaderProgram;
+}
 
 int main() {
-    if (SDL_Init(SDL_INIT_VIDEO) != 0) {
-        printf("SDL_Init Error: %s\n", SDL_GetError());
-        return 1;
-    }
+    SDL_Init(SDL_INIT_VIDEO);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 
-    SDL_Window *window = SDL_CreateWindow("Pong", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 600, 400, SDL_WINDOW_SHOWN);
-    if (!window) {
-        printf("SDL_CreateWindow Error: %s\n", SDL_GetError());
-        SDL_Quit();
-        return 1;
-    }
+    SDL_Window* window = SDL_CreateWindow("Rectangle with Shader", 100, 100, 800, 600, SDL_WINDOW_OPENGL);
+    SDL_GLContext context = SDL_GL_CreateContext(window);
 
-    SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
-    if (!renderer) {
-        printf("SDL_CreateRenderer Error: %s\n", SDL_GetError());
-        SDL_DestroyWindow(window);
-        SDL_Quit();
-        return 1;
-    }
+    glewExperimental = GL_TRUE;
+    glewInit();
 
-    if (TTF_Init() == -1) {
-        printf("TTF_Init Error: %s\n", TTF_GetError());
-        SDL_DestroyRenderer(renderer);
-        SDL_DestroyWindow(window);
-        SDL_Quit();
-        return 1;
-    }
+    // Load the vertex and fragment shaders
+    GLuint shaderProgram = loadShaderProgram("shaders/vertex.glsl", "shaders/fragment.glsl");
 
-    TTF_Font *font = TTF_OpenFont("font/rockwell.ttf", 20);
-    if (!font) {
-        printf("TTF_OpenFont Error: %s\n", TTF_GetError());
-        TTF_Quit();
-        SDL_DestroyRenderer(renderer);
-        SDL_DestroyWindow(window);
-        SDL_Quit();
-        return 1;
-    }
+    // Define rectangle data
+    float rectangleVertices[] = {
+        -0.5f, -0.5f, 0.0f, // Bottom left corner
+         0.5f, -0.5f, 0.0f, // Bottom right corner
+        -0.5f,  0.5f, 0.0f, // Top left corner
+         0.5f,  0.5f, 0.0f  // Top right corner
+    };
+    GLuint indices[] = { 0, 1, 2, 1, 3, 2 };  // Rectangle indices
 
-    float posX = 300.f;
-    float posY = 200.f;
-    float velX = 0.f;
-    float velY = 0.f;
-    float speed = 500.f;
+    GLuint VAO, VBO, EBO;
+    glGenVertexArrays(1, &VAO); glBindVertexArray(VAO);
+    glGenBuffers(1, &VBO); glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(rectangleVertices), rectangleVertices, GL_STATIC_DRAW);
+    glGenBuffers(1, &EBO); glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
-    SDL_Color color = { 255, 255, 255, 255 };
-    uint32_t startTime = SDL_GetTicks();
-    uint32_t deltaFrameCount = 0;
-    int frameCount = 0;
-    char buffer[256];
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
 
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
+
+    int running = 1;
     SDL_Event event;
-    int quit = 0;
-    while (!quit) {
-      if (SDL_PollEvent(&event)) {
-        if (event.type == SDL_QUIT) {
-          quit = 1;
+
+    while (running) {
+        while (SDL_PollEvent(&event)) {
+            if (event.type == SDL_QUIT) running = 0;
         }
 
-        if (event.type == SDL_KEYDOWN) {
-          switch (event.key.keysym.sym) {
-            case SDLK_ESCAPE:
-              quit = 1;
-              break;
-            case SDLK_UP:
-              velY = -speed;
-              break;
-            case SDLK_DOWN:
-              velY = speed;
-              break;
-            case SDLK_LEFT:
-              velX = -speed;
-              break;
-            case SDLK_RIGHT:
-              velX = speed;
-              break;
-          }
-        }
+        glClear(GL_COLOR_BUFFER_BIT);
 
-        if (event.type == SDL_KEYUP) {
-          switch (event.key.keysym.sym) {
-            case SDLK_UP:
-            case SDLK_DOWN:
-              velY = 0.f;
-              break;
-            case SDLK_LEFT:
-            case SDLK_RIGHT:
-              velX = 0.f;
-              break;
-          }
-        }
-      }
-      
-      frameCount++;
-      if (SDL_GetTicks() - startTime >= 1000) {
-        snprintf(buffer, sizeof(buffer), "FPS: %d", frameCount);
-        deltaFrameCount = frameCount;
-        frameCount = 0;
-        startTime = SDL_GetTicks();
-      }
+        // Use the rectangle shader
+        glUseProgram(shaderProgram);
 
-      SDL_SetRenderDrawColor(renderer, 40, 40, 40, 255);
-      SDL_RenderClear(renderer);
+        // Render the rectangle
+        glBindVertexArray(VAO);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
-      SDL_Surface* surface = TTF_RenderText_Blended(font, buffer, color);
-      SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
-
-      int width, height;
-      SDL_QueryTexture(texture, NULL, NULL, &width, &height);
-      SDL_Rect rect = { 10, 10, width, height };    
-      SDL_RenderCopy(renderer, texture, NULL, &rect);
-
-      float deltaTime = 1.f / deltaFrameCount;
-      float deltaX = velX * deltaTime;
-      float deltaY = velY * deltaTime;
-      
-      if (isnan(deltaX) || isnan(deltaY)) {
-        deltaX = 0.f;
-        deltaY = 0.f;
-      }
-
-      posX += deltaX;
-      posY += deltaY;
-
-      SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
-      SDL_Rect playerRect = {posX,posY, 50, 50};
-      SDL_RenderFillRect(renderer, &playerRect);
-
-      SDL_DestroyTexture(texture);
-      SDL_FreeSurface(surface);
-      SDL_RenderPresent(renderer);
+        SDL_GL_SwapWindow(window);
     }
 
-    TTF_CloseFont(font);
-    TTF_Quit();
+    // Clean up
+    glDeleteBuffers(1, &VBO);
+    glDeleteBuffers(1, &EBO);
+    glDeleteVertexArrays(1, &VAO);
+    glDeleteProgram(shaderProgram);
+    SDL_GL_DeleteContext(context);
     SDL_DestroyWindow(window);
-    SDL_DestroyRenderer(renderer);
     SDL_Quit();
 
     return 0;
