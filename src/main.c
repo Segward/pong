@@ -1,6 +1,7 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 #include <stdio.h>
+#include <math.h>
 
 int main() {
     if (SDL_Init(SDL_INIT_VIDEO) != 0) {
@@ -15,7 +16,7 @@ int main() {
         return 1;
     }
 
-    SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+    SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
     if (!renderer) {
         printf("SDL_CreateRenderer Error: %s\n", SDL_GetError());
         SDL_DestroyWindow(window);
@@ -41,13 +42,15 @@ int main() {
         return 1;
     }
 
-    int posX = 300;
-    int posY = 200;
-    int velX = 0;
-    int velY = 0;
+    float posX = 300.f;
+    float posY = 200.f;
+    float velX = 0.f;
+    float velY = 0.f;
+    float speed = 500.f;
 
     SDL_Color color = { 255, 255, 255, 255 };
     uint32_t startTime = SDL_GetTicks();
+    uint32_t deltaFrameCount = 0;
     int frameCount = 0;
     char buffer[256];
 
@@ -65,16 +68,16 @@ int main() {
               quit = 1;
               break;
             case SDLK_UP:
-              velY = -5;
+              velY = -speed;
               break;
             case SDLK_DOWN:
-              velY = 5;
+              velY = speed;
               break;
             case SDLK_LEFT:
-              velX = -5;
+              velX = -speed;
               break;
             case SDLK_RIGHT:
-              velX = 5;
+              velX = speed;
               break;
           }
         }
@@ -83,11 +86,11 @@ int main() {
           switch (event.key.keysym.sym) {
             case SDLK_UP:
             case SDLK_DOWN:
-              velY = 0;
+              velY = 0.f;
               break;
             case SDLK_LEFT:
             case SDLK_RIGHT:
-              velX = 0;
+              velX = 0.f;
               break;
           }
         }
@@ -96,6 +99,7 @@ int main() {
       frameCount++;
       if (SDL_GetTicks() - startTime >= 1000) {
         snprintf(buffer, sizeof(buffer), "FPS: %d", frameCount);
+        deltaFrameCount = frameCount;
         frameCount = 0;
         startTime = SDL_GetTicks();
       }
@@ -111,8 +115,17 @@ int main() {
       SDL_Rect rect = { 10, 10, width, height };    
       SDL_RenderCopy(renderer, texture, NULL, &rect);
 
-      posX += velX;
-      posY += velY;
+      float deltaTime = 1.f / deltaFrameCount;
+      float deltaX = velX * deltaTime;
+      float deltaY = velY * deltaTime;
+      
+      if (isnan(deltaX) || isnan(deltaY)) {
+        deltaX = 0.f;
+        deltaY = 0.f;
+      }
+
+      posX += deltaX;
+      posY += deltaY;
 
       SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
       SDL_Rect playerRect = {posX,posY, 50, 50};
