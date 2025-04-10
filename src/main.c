@@ -78,21 +78,18 @@ int main() {
     GLuint shaderProgram = loadShader("shaders/rect.vert", "shaders/rect.frag");
     GLint uColor = glGetUniformLocation(shaderProgram, "uColor");
 
-    float paddleHeight = 0.2f;
-    float paddleWidth = 0.05f;
     float rectVertices[] = {
-        -paddleWidth, -paddleHeight, 0.0f,
-         paddleWidth, -paddleHeight, 0.0f,
-         paddleWidth,  paddleHeight, 0.0f,
-        -paddleWidth,  paddleHeight, 0.0f
+        -0.05f, -0.2f, 0.0f,
+         0.05f, -0.2f, 0.0f,
+         0.05f,  0.2f, 0.0f,
+        -0.05f,  0.2f, 0.0f
     };
 
-    float ballSize = 0.03f;
     float ballVertices[] = {
-        -ballSize, -ballSize, 0.0f,
-         ballSize, -ballSize, 0.0f,
-         ballSize,  ballSize, 0.0f,
-        -ballSize,  ballSize, 0.0f
+        -0.03f, -0.03f, 0.0f,
+         0.03f, -0.03f, 0.0f,
+         0.03f,  0.03f, 0.0f,
+        -0.03f,  0.03f, 0.0f
     };
 
     unsigned int indices[] = {0, 1, 2, 2, 3, 0};
@@ -112,7 +109,6 @@ int main() {
         glEnableVertexAttribArray(0);
     }
 
-    // Update ball buffer separately
     glBindBuffer(GL_ARRAY_BUFFER, VBO[2]);
     glBufferData(GL_ARRAY_BUFFER, sizeof(ballVertices), ballVertices, GL_DYNAMIC_DRAW);
 
@@ -131,7 +127,6 @@ int main() {
     int running = 1;
 
     while (running) {
-        // Events
         while (SDL_PollEvent(&event)) {
             if (event.type == SDL_QUIT) running = 0;
         }
@@ -153,37 +148,35 @@ int main() {
         ballY += ballVelY * ballSpeed * deltaTime;
 
         // Bounce on top/bottom
-        if (ballY + ballSize > 1.0f || ballY - ballSize < -1.0f) ballVelY *= -1;
+        if (ballY + 0.03f >= 1.0f || ballY - 0.03f <= -1.0f) ballVelY *= -1;
 
         // Clamp paddles
-        if (paddle1Y + paddleHeight > 1.0f) paddle1Y = 1.0f - paddleHeight;
-        if (paddle1Y - paddleHeight < -1.0f) paddle1Y = -1.0f + paddleHeight;
-        if (paddle2Y + paddleHeight > 1.0f) paddle2Y = 1.0f - paddleHeight;
-        if (paddle2Y - paddleHeight < -1.0f) paddle2Y = -1.0f + paddleHeight;
-
+        if (paddle1Y + 0.2f > 1.0f) paddle1Y = 1.0f - 0.2f;
+        if (paddle1Y - 0.2f < -1.0f) paddle1Y = -1.0f + 0.2f;
+        if (paddle2Y + 0.2f > 1.0f) paddle2Y = 1.0f - 0.2f;
+        if (paddle2Y - 0.2f < -1.0f) paddle2Y = -1.0f + 0.2f;
 
         // Paddle positions
-        float paddle1X = -0.9f;
-        float paddle2X = 0.9f;
-        float paddleWidth = 0.05f, paddleHeight = 0.2f;
+        float paddle1X = -0.925f;
+        float paddle2X = 0.925f;
 
         // Ball-paddle collision
-        if (ballX - ballSize < paddle1X + paddleWidth &&
-            ballX > paddle1X &&
-            ballY < paddle1Y + paddleHeight &&
-            ballY > paddle1Y - paddleHeight) {
+        if (ballX - 0.03f <= paddle1X + 0.05f &&
+            ballX >= paddle1X &&
+            ballY <= paddle1Y + 0.2f &&
+            ballY >= paddle1Y - 0.2f) {
             ballVelX *= -1;
         }
 
-        if (ballX + ballSize > paddle2X - paddleWidth &&
-            ballX < paddle2X &&
-            ballY < paddle2Y + paddleHeight &&
-            ballY > paddle2Y - paddleHeight) {
+        if (ballX + 0.03f >= paddle2X - 0.05f &&
+            ballX <= paddle2X &&
+            ballY <= paddle2Y + 0.2f &&
+            ballY >= paddle2Y - 0.2f) {
             ballVelX *= -1;
         }
 
         // Score check
-        if (ballX < -1.1f || ballX > 1.1f) {
+        if (ballX < -1.0f || ballX > 1.0f) {
             ballX = 0.0f;
             ballY = 0.0f;
             ballVelX = -ballVelX;
@@ -205,10 +198,10 @@ int main() {
 
         // Update ball buffer
         float movedBall[] = {
-            -ballSize + ballX, -ballSize + ballY, 0.0f,
-             ballSize + ballX, -ballSize + ballY, 0.0f,
-             ballSize + ballX,  ballSize + ballY, 0.0f,
-            -ballSize + ballX,  ballSize + ballY, 0.0f
+            -0.03f + ballX, -0.03f + ballY, 0.0f,
+             0.03f + ballX, -0.03f + ballY, 0.0f,
+             0.03f + ballX,  0.03f + ballY, 0.0f,
+            -0.03f + ballX,  0.03f + ballY, 0.0f
         };
         glBindBuffer(GL_ARRAY_BUFFER, VBO[2]);
         glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(movedBall), movedBall);
@@ -217,7 +210,7 @@ int main() {
         glClear(GL_COLOR_BUFFER_BIT);
         glUseProgram(shaderProgram);
 
-        glUniform3f(uColor, 1.0f, 1.0f, 1.0f); // white
+        glUniform3f(uColor, 0.0f, 0.0f, 1.0f);
         glBindVertexArray(VAO[0]);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
