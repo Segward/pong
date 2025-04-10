@@ -135,78 +135,73 @@ int main() {
         float deltaTime = (currentTime - lastTime) / 1000.0f;
         lastTime = currentTime;
 
-
-        // Input
         const Uint8* keystate = SDL_GetKeyboardState(NULL);
         if (keystate[SDL_SCANCODE_W]) paddle1Y += paddleSpeed * deltaTime;
         if (keystate[SDL_SCANCODE_S]) paddle1Y -= paddleSpeed * deltaTime;
         if (keystate[SDL_SCANCODE_UP]) paddle2Y += paddleSpeed * deltaTime;
         if (keystate[SDL_SCANCODE_DOWN]) paddle2Y -= paddleSpeed * deltaTime;
 
-        // Move ball
         ballX += ballVelX * ballSpeed * deltaTime;
         ballY += ballVelY * ballSpeed * deltaTime;
 
-        // Bounce on top/bottom
-        if (ballY + 0.03f >= 1.0f || ballY - 0.03f <= -1.0f) ballVelY *= -1;
-
-        // Clamp paddles
         if (paddle1Y + 0.2f > 1.0f) paddle1Y = 1.0f - 0.2f;
         if (paddle1Y - 0.2f < -1.0f) paddle1Y = -1.0f + 0.2f;
         if (paddle2Y + 0.2f > 1.0f) paddle2Y = 1.0f - 0.2f;
         if (paddle2Y - 0.2f < -1.0f) paddle2Y = -1.0f + 0.2f;
 
-        // Paddle positions
         float paddle1X = -0.925f;
         float paddle2X = 0.925f;
 
-        // Ball-paddle collision
-        if (ballX - 0.03f <= paddle1X + 0.05f &&
-            ballX >= paddle1X &&
-            ballY <= paddle1Y + 0.2f &&
-            ballY >= paddle1Y - 0.2f) {
+        if (ballY + 0.03f >= 1.0f || ballY - 0.03f <= -1.0f) ballVelY *= -1;
+
+        if (ballX - 0.03f <= paddle1X + 0.05f + 0.01f 
+                && ballY <= paddle1Y + 0.2f
+                && ballY >= paddle1Y - 0.2f) {
             ballVelX *= -1;
         }
 
-        if (ballX + 0.03f >= paddle2X - 0.05f &&
-            ballX <= paddle2X &&
-            ballY <= paddle2Y + 0.2f &&
-            ballY >= paddle2Y - 0.2f) {
+        if (ballX + 0.03f >= paddle2X - 0.05f - 0.01f 
+                && ballY <= paddle2Y + 0.2f
+                && ballY >= paddle2Y - 0.2f) {
             ballVelX *= -1;
         }
 
-        // Score check
-        if (ballX < -1.0f || ballX > 1.0f) {
+        if (ballX <= -1.0f || ballX >= 1.0f) {
             ballX = 0.0f;
             ballY = 0.0f;
             ballVelX = -ballVelX;
         }
 
-        // Update paddles
-        for (int i = 0; i < 2; i++) {
-            float y = (i == 0) ? paddle1Y : paddle2Y;
-            float x = (i == 0) ? paddle1X : paddle2X;
-            float movedVertices[] = {
-                -0.05f + x, -0.2f + y, 0.0f,
-                 0.05f + x, -0.2f + y, 0.0f,
-                 0.05f + x,  0.2f + y, 0.0f,
-                -0.05f + x,  0.2f + y, 0.0f
-            };
-            glBindBuffer(GL_ARRAY_BUFFER, VBO[i]);
-            glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(movedVertices), movedVertices);
-        }
+        float movedVertices0[] = {
+            -0.05f + paddle1X, -0.2f + paddle1Y, 0.0f,
+             0.05f + paddle1X, -0.2f + paddle1Y, 0.0f,
+             0.05f + paddle1X,  0.2f + paddle1Y, 0.0f,
+            -0.05f + paddle1X,  0.2f + paddle1Y, 0.0f
+        };
 
-        // Update ball buffer
+        glBindBuffer(GL_ARRAY_BUFFER, VBO[0]);
+        glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(movedVertices0), movedVertices0);
+
+        float movedVertices1[] = {
+            -0.05f + paddle2X, -0.2f + paddle2Y, 0.0f,
+             0.05f + paddle2X, -0.2f + paddle2Y, 0.0f,
+             0.05f + paddle2X,  0.2f + paddle2Y, 0.0f,
+            -0.05f + paddle2X,  0.2f + paddle2Y, 0.0f
+        };
+
+        glBindBuffer(GL_ARRAY_BUFFER, VBO[1]);
+        glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(movedVertices1), movedVertices1);
+
         float movedBall[] = {
             -0.03f + ballX, -0.03f + ballY, 0.0f,
              0.03f + ballX, -0.03f + ballY, 0.0f,
              0.03f + ballX,  0.03f + ballY, 0.0f,
             -0.03f + ballX,  0.03f + ballY, 0.0f
         };
+
         glBindBuffer(GL_ARRAY_BUFFER, VBO[2]);
         glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(movedBall), movedBall);
 
-        // Draw
         glClear(GL_COLOR_BUFFER_BIT);
         glUseProgram(shaderProgram);
 
