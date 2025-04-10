@@ -4,7 +4,7 @@ Just started learning SDL2 with C so this is a simple pong game I made to practi
 
 ## Requirements
 
-1. Install SDL2, SDL2 ttf and SDL mixer using Homebrew:
+1. Install SDL2, SDL2 ttf and SDL2 mixer using Homebrew:
 
 ```bash
 brew install sdl2 sdl2_ttf sdl2_mixer
