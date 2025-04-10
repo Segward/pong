@@ -67,143 +67,177 @@ GLuint loadShader(const char* vertexPath, const char* fragmentPath) {
 
 int main() {
     SDL_Init(SDL_INIT_VIDEO);
-    
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 
-    SDL_Window* window = SDL_CreateWindow("Multiple Rectangles", 100, 100, 800, 600, SDL_WINDOW_OPENGL);
-    if (window == NULL) {
-        printf("ERROR: Could not create window\n");
-        return -1;
-    }
-
+    SDL_Window* window = SDL_CreateWindow("Pong", 100, 100, 800, 600, SDL_WINDOW_OPENGL);
     SDL_GLContext context = SDL_GL_CreateContext(window);
-    if (context == NULL) {
-        printf("ERROR: Could not create OpenGL context\n");
-        SDL_DestroyWindow(window);
-        return -1;
-    }
-
     glewInit();
 
-    GLuint rectShaderProgram = loadShader("shaders/rect.vert", "shaders/rect.frag");
-    if (rectShaderProgram == 0) {
-        printf("ERROR: Shader program could not be created!\n");
-        return -1;
+    GLuint shaderProgram = loadShader("shaders/rect.vert", "shaders/rect.frag");
+    GLint uColor = glGetUniformLocation(shaderProgram, "uColor");
+
+    float paddleHeight = 0.2f;
+    float paddleWidth = 0.05f;
+    float rectVertices[] = {
+        -paddleWidth, -paddleHeight, 0.0f,
+         paddleWidth, -paddleHeight, 0.0f,
+         paddleWidth,  paddleHeight, 0.0f,
+        -paddleWidth,  paddleHeight, 0.0f
+    };
+
+    float ballSize = 0.03f;
+    float ballVertices[] = {
+        -ballSize, -ballSize, 0.0f,
+         ballSize, -ballSize, 0.0f,
+         ballSize,  ballSize, 0.0f,
+        -ballSize,  ballSize, 0.0f
+    };
+
+    unsigned int indices[] = {0, 1, 2, 2, 3, 0};
+
+    GLuint VAO[3], VBO[3], EBO[3];
+    glGenVertexArrays(3, VAO);
+    glGenBuffers(3, VBO);
+    glGenBuffers(3, EBO);
+
+    for (int i = 0; i < 3; i++) {
+        glBindVertexArray(VAO[i]);
+        glBindBuffer(GL_ARRAY_BUFFER, VBO[i]);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(rectVertices), rectVertices, GL_DYNAMIC_DRAW);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO[i]);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+        glEnableVertexAttribArray(0);
     }
 
-    GLint uColor = glGetUniformLocation(rectShaderProgram, "uColor");
+    // Update ball buffer separately
+    glBindBuffer(GL_ARRAY_BUFFER, VBO[2]);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(ballVertices), ballVertices, GL_DYNAMIC_DRAW);
 
-    // Rectangle 1 (initial position)
-    float rect1Vertices[] = {
-        -0.5f, -0.5f, 0.0f,   // bottom left
-         0.5f, -0.5f, 0.0f,   // bottom right
-         0.5f,  0.5f, 0.0f,   // top right
-        -0.5f,  0.5f, 0.0f    // top left
-    };
+    float paddle1Y = 0.0f;
+    float paddle2Y = 0.0f;
+    float ballX = 0.0f;
+    float ballY = 0.0f;
+    float ballVelX = 1.0f;
+    float ballVelY = 1.0f;
 
-    // Rectangle 2 (initial position)
-    float rect2Vertices[] = {
-        -0.5f, -0.5f, 0.0f,   // bottom left
-         0.5f, -0.5f, 0.0f,   // bottom right
-         0.5f,  0.5f, 0.0f,   // top right
-        -0.5f,  0.5f, 0.0f    // top left
-    };
+    Uint32 lastTime = SDL_GetTicks();
+    const float paddleSpeed = 1.5f;
+    const float ballSpeed = 0.5f;
 
-    unsigned int indices[] = {
-        0, 1, 2,              // triangle bottom right
-        2, 3, 0               // triangle top left
-    };
-
-    GLuint VAO1, VBO1, EBO1;
-    GLuint VAO2, VBO2, EBO2;
-
-    // First rectangle
-    glGenVertexArrays(1, &VAO1);
-    glBindVertexArray(VAO1);
-    glGenBuffers(1, &VBO1);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO1);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(rect1Vertices), rect1Vertices, GL_STATIC_DRAW);
-    glGenBuffers(1, &EBO1);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO1);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
-
-    // Second rectangle
-    glGenVertexArrays(1, &VAO2);
-    glBindVertexArray(VAO2);
-    glGenBuffers(1, &VBO2);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO2);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(rect2Vertices), rect2Vertices, GL_STATIC_DRAW);
-    glGenBuffers(1, &EBO2);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO2);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
-
-    int running = 1;
     SDL_Event event;
-    
-    float moveX1 = 0.1f;  // Rectangle 1 moves right
-    float moveY1 = 0.1f;  // Rectangle 1 moves up
-    float moveX2 = -0.1f; // Rectangle 2 moves left
-    float moveY2 = -0.1f; // Rectangle 2 moves down
+    int running = 1;
 
     while (running) {
+        // Events
         while (SDL_PollEvent(&event)) {
             if (event.type == SDL_QUIT) running = 0;
         }
 
-        // Update the vertices with new positions
-        float movedVertices1[] = {
-            -0.5f + moveX1, -0.5f + moveY1, 0.0f,   // bottom left
-             0.5f + moveX1, -0.5f + moveY1, 0.0f,   // bottom right
-             0.5f + moveX1,  0.5f + moveY1, 0.0f,   // top right
-            -0.5f + moveX1,  0.5f + moveY1, 0.0f    // top left
+        Uint32 currentTime = SDL_GetTicks();
+        float deltaTime = (currentTime - lastTime) / 1000.0f;
+        lastTime = currentTime;
+
+
+        // Input
+        const Uint8* keystate = SDL_GetKeyboardState(NULL);
+        if (keystate[SDL_SCANCODE_W]) paddle1Y += paddleSpeed * deltaTime;
+        if (keystate[SDL_SCANCODE_S]) paddle1Y -= paddleSpeed * deltaTime;
+        if (keystate[SDL_SCANCODE_UP]) paddle2Y += paddleSpeed * deltaTime;
+        if (keystate[SDL_SCANCODE_DOWN]) paddle2Y -= paddleSpeed * deltaTime;
+
+        // Move ball
+        ballX += ballVelX * ballSpeed * deltaTime;
+        ballY += ballVelY * ballSpeed * deltaTime;
+
+        // Bounce on top/bottom
+        if (ballY + ballSize > 1.0f || ballY - ballSize < -1.0f) ballVelY *= -1;
+
+        // Clamp paddles
+        if (paddle1Y + paddleHeight > 1.0f) paddle1Y = 1.0f - paddleHeight;
+        if (paddle1Y - paddleHeight < -1.0f) paddle1Y = -1.0f + paddleHeight;
+        if (paddle2Y + paddleHeight > 1.0f) paddle2Y = 1.0f - paddleHeight;
+        if (paddle2Y - paddleHeight < -1.0f) paddle2Y = -1.0f + paddleHeight;
+
+
+        // Paddle positions
+        float paddle1X = -0.9f;
+        float paddle2X = 0.9f;
+        float paddleWidth = 0.05f, paddleHeight = 0.2f;
+
+        // Ball-paddle collision
+        if (ballX - ballSize < paddle1X + paddleWidth &&
+            ballX > paddle1X &&
+            ballY < paddle1Y + paddleHeight &&
+            ballY > paddle1Y - paddleHeight) {
+            ballVelX *= -1;
+        }
+
+        if (ballX + ballSize > paddle2X - paddleWidth &&
+            ballX < paddle2X &&
+            ballY < paddle2Y + paddleHeight &&
+            ballY > paddle2Y - paddleHeight) {
+            ballVelX *= -1;
+        }
+
+        // Score check
+        if (ballX < -1.1f || ballX > 1.1f) {
+            ballX = 0.0f;
+            ballY = 0.0f;
+            ballVelX = -ballVelX;
+        }
+
+        // Update paddles
+        for (int i = 0; i < 2; i++) {
+            float y = (i == 0) ? paddle1Y : paddle2Y;
+            float x = (i == 0) ? paddle1X : paddle2X;
+            float movedVertices[] = {
+                -0.05f + x, -0.2f + y, 0.0f,
+                 0.05f + x, -0.2f + y, 0.0f,
+                 0.05f + x,  0.2f + y, 0.0f,
+                -0.05f + x,  0.2f + y, 0.0f
+            };
+            glBindBuffer(GL_ARRAY_BUFFER, VBO[i]);
+            glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(movedVertices), movedVertices);
+        }
+
+        // Update ball buffer
+        float movedBall[] = {
+            -ballSize + ballX, -ballSize + ballY, 0.0f,
+             ballSize + ballX, -ballSize + ballY, 0.0f,
+             ballSize + ballX,  ballSize + ballY, 0.0f,
+            -ballSize + ballX,  ballSize + ballY, 0.0f
         };
+        glBindBuffer(GL_ARRAY_BUFFER, VBO[2]);
+        glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(movedBall), movedBall);
 
-        float movedVertices2[] = {
-            -0.5f + moveX2, -0.5f + moveY2, 0.0f,   // bottom left
-             0.5f + moveX2, -0.5f + moveY2, 0.0f,   // bottom right
-             0.5f + moveX2,  0.5f + moveY2, 0.0f,   // top right
-            -0.5f + moveX2,  0.5f + moveY2, 0.0f    // top left
-        };
-
-        // Update the vertex buffers with the new positions
-        glBindBuffer(GL_ARRAY_BUFFER, VBO1);
-        glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(movedVertices1), movedVertices1);
-
-        glBindBuffer(GL_ARRAY_BUFFER, VBO2);
-        glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(movedVertices2), movedVertices2);
-
+        // Draw
         glClear(GL_COLOR_BUFFER_BIT);
-        glUseProgram(rectShaderProgram);
+        glUseProgram(shaderProgram);
 
-        glUniform3f(uColor, 1.0f, 0.0f, 0.0f);  // Set color for Rectangle 1
-        glBindVertexArray(VAO1);
+        glUniform3f(uColor, 1.0f, 1.0f, 1.0f); // white
+        glBindVertexArray(VAO[0]);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
-        glUniform3f(uColor, 0.0f, 0.0f, 1.0f);  // Set color for Rectangle 2
-        glBindVertexArray(VAO2);
+        glBindVertexArray(VAO[1]);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+        glUniform3f(uColor, 1.0f, 0.0f, 0.0f); // red ball
+        glBindVertexArray(VAO[2]);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
         SDL_GL_SwapWindow(window);
     }
 
-    // Cleanup (unchanged)
-    glDeleteBuffers(1, &VBO1);
-    glDeleteBuffers(1, &EBO1);
-    glDeleteVertexArrays(1, &VAO1);
+    for (int i = 0; i < 3; i++) {
+        glDeleteBuffers(1, &VBO[i]);
+        glDeleteBuffers(1, &EBO[i]);
+        glDeleteVertexArrays(1, &VAO[i]);
+    }
 
-    glDeleteBuffers(1, &VBO2);
-    glDeleteBuffers(1, &EBO2);
-    glDeleteVertexArrays(1, &VAO2);
-
-    glDeleteProgram(rectShaderProgram);
+    glDeleteProgram(shaderProgram);
     SDL_GL_DeleteContext(context);
     SDL_DestroyWindow(window);
     SDL_Quit();
