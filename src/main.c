@@ -149,8 +149,8 @@ int main() {
         if (paddle2Y + 0.2f >= 1.0f) paddle2Y = 1.0f - 0.2f;
         if (paddle2Y - 0.2f <= -1.0f) paddle2Y = -1.0f + 0.2f;
 
-        float paddle1X = -0.925f;
-        float paddle2X = 0.925f;
+        float paddle1X = -0.95f;
+        float paddle2X = 0.95f;
 
         if (ballY + 0.03f >= 1.0f || ballY - 0.03f <= -1.0f) ballVelY *= -1;
 
@@ -236,7 +236,8 @@ int main() {
         glBindBuffer(GL_ARRAY_BUFFER, VBO[2]);
         glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(movedBall), movedBall);
 
-        glClear(GL_COLOR_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glUseProgram(shaderProgram);
 
         glUniform3f(uColor, 0.0f, 0.0f, 1.0f);
