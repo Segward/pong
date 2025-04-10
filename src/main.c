@@ -144,26 +144,60 @@ int main() {
         ballX += ballVelX * ballSpeed * deltaTime;
         ballY += ballVelY * ballSpeed * deltaTime;
 
-        if (paddle1Y + 0.2f > 1.0f) paddle1Y = 1.0f - 0.2f;
-        if (paddle1Y - 0.2f < -1.0f) paddle1Y = -1.0f + 0.2f;
-        if (paddle2Y + 0.2f > 1.0f) paddle2Y = 1.0f - 0.2f;
-        if (paddle2Y - 0.2f < -1.0f) paddle2Y = -1.0f + 0.2f;
+        if (paddle1Y + 0.2f >= 1.0f) paddle1Y = 1.0f - 0.2f;
+        if (paddle1Y - 0.2f <= -1.0f) paddle1Y = -1.0f + 0.2f;
+        if (paddle2Y + 0.2f >= 1.0f) paddle2Y = 1.0f - 0.2f;
+        if (paddle2Y - 0.2f <= -1.0f) paddle2Y = -1.0f + 0.2f;
 
         float paddle1X = -0.925f;
         float paddle2X = 0.925f;
 
         if (ballY + 0.03f >= 1.0f || ballY - 0.03f <= -1.0f) ballVelY *= -1;
 
-        if (ballX - 0.03f <= paddle1X + 0.05f + 0.01f 
-                && ballY <= paddle1Y + 0.2f
-                && ballY >= paddle1Y - 0.2f) {
-            ballVelX *= -1;
+        float delta1X = ballX - paddle1X;
+        float delta1Y = ballY - paddle1Y;
+        float overlap1X = 0.03f + 0.05f - fabs(delta1X);
+        float overlap1Y = 0.2f + 0.03f - fabs(delta1Y);
+
+        if (overlap1X > 0 && overlap1Y > 0) {
+            if (overlap1X < overlap1Y) {
+              ballVelX *= -1;
+              if (delta1X > 0) {
+                ballX += overlap1X;
+              } else {
+                ballX -= overlap1X;
+              }
+            } else {
+              ballVelY *= -1;
+              if (delta1Y > 0) {
+                ballY += overlap1Y;
+              } else {
+                ballY -= overlap1Y;
+              }
+            }
         }
 
-        if (ballX + 0.03f >= paddle2X - 0.05f - 0.01f 
-                && ballY <= paddle2Y + 0.2f
-                && ballY >= paddle2Y - 0.2f) {
-            ballVelX *= -1;
+        float delta2X = ballX - paddle2X;
+        float delta2Y = ballY - paddle2Y;
+        float overlap2X = 0.03f + 0.05f - fabs(delta2X);
+        float overlap2Y = 0.2f + 0.03f - fabs(delta2Y);
+
+        if (overlap2X > 0 && overlap2Y > 0) {
+            if (overlap2X < overlap2Y) {
+              ballVelX *= -1;
+              if (delta2X > 0) {
+                ballX += overlap2X;
+              } else {
+                ballX -= overlap2X;
+              }
+            } else {
+              ballVelY *= -1;
+              if (delta2Y > 0) {
+                ballY += overlap2Y;
+              } else {
+                ballY -= overlap2Y;
+              }
+            }
         }
 
         if (ballX <= -1.0f || ballX >= 1.0f) {
