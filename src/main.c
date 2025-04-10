@@ -161,8 +161,6 @@ int main() {
     float paddle1X = -0.95f;
     float paddle2X = 0.95f;
 
-    if (ballY + 0.03f >= 1.0f || ballY - 0.03f <= -1.0f) ballVelY *= -1;
-
     float delta1X = ballX - paddle1X;
     float delta1Y = ballY - paddle1Y;
     float overlap1X = 0.03f + 0.05f - fabs(delta1X);
@@ -215,6 +213,12 @@ int main() {
       ballX = 0.0f;
       ballY = 0.0f;
       ballVelX = -ballVelX;
+    }
+
+    if (ballY <= -1.0f || ballY >= 1.0f) {
+      ballVelY *= -1;
+      if (ballY <= -1.0f) ballY = -1.0f;
+      if (ballY >= 1.0f) ballY = 1.0f;
     }
 
     float movedVertices0[] = {
