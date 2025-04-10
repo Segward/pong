@@ -1,6 +1,6 @@
 CC = gcc
 CFLAGS = -Wall -g -I/opt/homebrew/include
-LDFLAGS = -L/opt/homebrew/lib -lSDL2 -lSDL2_ttf -lGLEW -framework OpenGL -lm
+LDFLAGS = -L/opt/homebrew/lib -lSDL2 -lSDL2_mixer -lSDL2_ttf -lGLEW -framework OpenGL -lm
 
 SRC = src/main.c
 OBJ = src/main.o

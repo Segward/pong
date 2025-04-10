@@ -4,10 +4,10 @@ Just started learning SDL2 with C so this is a simple pong game I made to practi
 
 ## Requirements
 
-1. Install SDL2 and SDL2_ttf using Homebrew:
+1. Install SDL2, SDL2 ttf and SDL mixer using Homebrew:
 
 ```bash
-brew install sdl2 sdl2_ttf
+brew install sdl2 sdl2_ttf sdl2_mixer
 ```
 
 2. Have the gcc compiler installed. You can install it using Homebrew:
