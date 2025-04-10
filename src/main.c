@@ -53,27 +53,26 @@ GLuint loadShaderProgram(const char* vertexPath, const char* fragmentPath) {
 
 int main() {
     SDL_Init(SDL_INIT_VIDEO);
+
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 
-    SDL_Window* window = SDL_CreateWindow("Rectangle with Shader", 100, 100, 800, 600, SDL_WINDOW_OPENGL);
+    SDL_Window* window = SDL_CreateWindow("Pong", 100, 100, 800, 600, SDL_WINDOW_OPENGL);
     SDL_GLContext context = SDL_GL_CreateContext(window);
 
-    glewExperimental = GL_TRUE;
     glewInit();
 
-    // Load the vertex and fragment shaders
     GLuint shaderProgram = loadShaderProgram("shaders/vertex.glsl", "shaders/fragment.glsl");
 
-    // Define rectangle data
     float rectangleVertices[] = {
         -0.5f, -0.5f, 0.0f, // Bottom left corner
          0.5f, -0.5f, 0.0f, // Bottom right corner
         -0.5f,  0.5f, 0.0f, // Top left corner
          0.5f,  0.5f, 0.0f  // Top right corner
     };
-    GLuint indices[] = { 0, 1, 2, 1, 3, 2 };  // Rectangle indices
+
+    GLuint indices[] = { 0, 1, 2, 1, 3, 2 };
 
     GLuint VAO, VBO, EBO;
     glGenVertexArrays(1, &VAO); glBindVertexArray(VAO);
@@ -97,18 +96,12 @@ int main() {
         }
 
         glClear(GL_COLOR_BUFFER_BIT);
-
-        // Use the rectangle shader
         glUseProgram(shaderProgram);
-
-        // Render the rectangle
         glBindVertexArray(VAO);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-
         SDL_GL_SwapWindow(window);
     }
 
-    // Clean up
     glDeleteBuffers(1, &VBO);
     glDeleteBuffers(1, &EBO);
     glDeleteVertexArrays(1, &VAO);
