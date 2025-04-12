@@ -1,13 +1,13 @@
 # Pong Game
 
-Just started learning SDL2 with C so this is a simple pong game I made to practice.
+This is a simple Pong game implemented in C using GLFW3, GLEW and SDL2.
 
 ## Requirements
 
-1. Install SDL2, SDL2 ttf and SDL2 mixer using Homebrew:
+1. Install SDL2, SDL2 mixer, GLEW, and GLFW3. You can do this using Homebrew:
 
 ```bash
-brew install sdl2 sdl2_ttf sdl2_mixer
+brew install sdl2 sdl2_mixer glew glfw3
 ```
 
 2. Have the gcc compiler installed. You can install it using Homebrew:
