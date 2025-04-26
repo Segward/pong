@@ -30,8 +30,20 @@ int main(int argc, char *argv[]) {
 
   int player1Score = 0;
   int player2Score = 0;
+  double start = GetTime();
 
   while (!WindowShouldClose()) {
+    float time = GetTime();
+    BeginDrawing();
+    ClearBackground(BLACK);
+
+    if (time - start <= 3) {
+      DrawText("PONG", screenWidth / 2 - MeasureText("PONG", 60) / 2, screenHeight / 2 - 30, 60, WHITE);
+      DrawText("Made by Segward", screenWidth / 2 - MeasureText("Made by Segward", 20) / 2, screenHeight / 2 + 30, 20, WHITE);
+      EndDrawing();
+      continue;
+    }
+
     if (IsKeyDown(KEY_W) && player2.y > 0) {
       player2.y -= playerSpeed;
     }
@@ -84,11 +96,6 @@ int main(int argc, char *argv[]) {
     }
 
     UpdateMusicStream(music);
-
-    float time = GetTime();
-
-    BeginDrawing();
-    ClearBackground(BLACK);
 
     BeginShaderMode(shader);
     SetShaderValue(shader, timeLoc, &time, SHADER_UNIFORM_FLOAT);
