@@ -17,13 +17,12 @@ int main(int argc, char *argv[]) {
   int ballRadius = 10;
   float ballSpeed = 200 * 1.0f / 60.0f;
   float playerSpeed = 300 * 1.0f / 60.0f;
-
-  Color darkGray = { 50, 50, 50, 255 };
   Vector2 player1 = { 780, 300 };
   Vector2 player2 = { 0, 300 };
   Vector2 ball = { 400, 300 };
   Vector2 playerSize = { 20, 100 };
   Vector2 ballVelocity = { ballSpeed, ballSpeed };
+  Color darkGray = { 50, 50, 50, 255 };
 
   int player1Score = 0;
   int player2Score = 0;
