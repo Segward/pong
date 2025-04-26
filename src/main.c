@@ -6,13 +6,18 @@ int main(int argc, char *argv[]) {
   int screenHeight = 600;
 
   InitWindow(screenWidth, screenHeight, "pong [raylib]");
-  SetTargetFPS(60); 
-
   InitAudioDevice();
+  SetTargetFPS(60);
 
   Sound soundHit = LoadSound("resources/hit.mp3");
+  Sound soundScore = LoadSound("resources/score.mp3");
   Music music = LoadMusicStream("resources/wander.mp3"); 
   PlayMusicStream(music);
+
+  Shader shader = LoadShader(0, "resources/stars.fs");
+  int timeLoc = GetShaderLocation(shader, "iTime");
+  int resLoc = GetShaderLocation(shader, "iResolution");
+  Vector2 resolution = { (float)screenWidth, (float)screenHeight };
 
   int ballRadius = 10;
   float ballSpeed = 200 * 1.0f / 60.0f;
@@ -22,7 +27,6 @@ int main(int argc, char *argv[]) {
   Vector2 ball = { 400, 300 };
   Vector2 playerSize = { 20, 100 };
   Vector2 ballVelocity = { ballSpeed, ballSpeed };
-  Color darkGray = { 50, 50, 50, 255 };
 
   int player1Score = 0;
   int player2Score = 0;
@@ -68,6 +72,7 @@ int main(int argc, char *argv[]) {
       ball.x = screenWidth / 2;
       ball.y = screenHeight / 2;
       ballVelocity.x *= -1;
+      PlaySound(soundScore);
     }
 
     if (ball.x > screenWidth) {
@@ -75,24 +80,33 @@ int main(int argc, char *argv[]) {
       ball.x = screenWidth / 2;
       ball.y = screenHeight / 2;
       ballVelocity.x *= -1;
+      PlaySound(soundScore);
     }
 
     UpdateMusicStream(music);
 
+    float time = GetTime();
+
     BeginDrawing();
-    ClearBackground(darkGray);
+    ClearBackground(BLACK);
+
+    BeginShaderMode(shader);
+    SetShaderValue(shader, timeLoc, &time, SHADER_UNIFORM_FLOAT);
+    SetShaderValue(shader, resLoc, &resolution, SHADER_UNIFORM_VEC2);
+    DrawRectangle(0, 0, screenWidth, screenHeight, BLACK);
+    EndShaderMode();
 
     DrawRectangle(player1.x, player1.y, playerSize.x, playerSize.y, BLUE);
     DrawRectangle(player2.x, player2.y, playerSize.x, playerSize.y, RED);
     DrawCircle(ball.x, ball.y, ballRadius, WHITE);
 
-    char scoreText[50];
-    sprintf(scoreText, "Player 1: %d - Player 2: %d", player1Score, player2Score);
-    DrawText(scoreText, screenWidth / 2 - MeasureText(scoreText, 20) / 2, 10, 20, WHITE);   
+    DrawText(TextFormat("%d", player1Score), screenWidth / 2 - 50, 20, 40, BLUE);
+    DrawText(TextFormat("%d", player2Score), screenWidth / 2 + 20, 20, 40, RED);
  
     EndDrawing();
   }
 
+  UnloadShader(shader);
   CloseWindow();
   return 0;
 }
