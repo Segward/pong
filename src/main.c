@@ -30,19 +30,19 @@ int main(int argc, char *argv[]) {
 
   while (!WindowShouldClose()) {
     if (IsKeyDown(KEY_W) && player1.y > 0) {
-      player1.y -= playerSpeed;
-    }
-
-    if (IsKeyDown(KEY_S) && player1.y < screenHeight - playerSize.y) {
-      player1.y += playerSpeed;
-    }
-
-    if (IsKeyDown(KEY_UP) && player2.y > 0) {
       player2.y -= playerSpeed;
     }
 
-    if (IsKeyDown(KEY_DOWN) && player2.y < screenHeight - playerSize.y) {
+    if (IsKeyDown(KEY_S) && player1.y < screenHeight - playerSize.y) {
       player2.y += playerSpeed;
+    }
+
+    if (IsKeyDown(KEY_UP) && player2.y > 0) {
+      player1.y -= playerSpeed;
+    }
+
+    if (IsKeyDown(KEY_DOWN) && player2.y < screenHeight - playerSize.y) {
+      player1.y += playerSpeed;
     }
 
     ball.x += ballVelocity.x;
