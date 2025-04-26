@@ -7,3 +7,4 @@ compile:
 run:
 	$(MAKE) compile
 	./pong
+	${MAKE} clean
