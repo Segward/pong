@@ -18,8 +18,11 @@ void main() {
           rand(vec2(i, 2)) * iResolution.y * 2
         );
 
+        // Normalize the star position to the screen resolution 
         float d = distance(gl_FragCoord.xy, starPos);
         float star = smoothstep(1.5, 0.0, d);
+      
+        // Create a twinkling effect
         star *= 0.5 + 0.5 * sin(iTime * 3.0 + float(i));
         color += vec3(star);
     }
