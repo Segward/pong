@@ -28,19 +28,19 @@ int main(int argc, char *argv[]) {
   int player2Score = 0;
 
   while (!WindowShouldClose()) {
-    if (IsKeyDown(KEY_W) && player1.y > 0) {
+    if (IsKeyDown(KEY_W) && player2.y > 0) {
       player2.y -= playerSpeed;
     }
 
-    if (IsKeyDown(KEY_S) && player1.y < screenHeight - playerSize.y) {
+    if (IsKeyDown(KEY_S) && player2.y < screenHeight - playerSize.y) {
       player2.y += playerSpeed;
     }
 
-    if (IsKeyDown(KEY_UP) && player2.y > 0) {
+    if (IsKeyDown(KEY_UP) && player1.y > 0) {
       player1.y -= playerSpeed;
     }
 
-    if (IsKeyDown(KEY_DOWN) && player2.y < screenHeight - playerSize.y) {
+    if (IsKeyDown(KEY_DOWN) && player1.y < screenHeight - playerSize.y) {
       player1.y += playerSpeed;
     }
 
