@@ -1,0 +1,4 @@
+/Users/gustavskyberg/Home/Programming/pong/build/CMakeFiles/pong.dir
+/Users/gustavskyberg/Home/Programming/pong/build/CMakeFiles/resources.dir
+/Users/gustavskyberg/Home/Programming/pong/build/CMakeFiles/edit_cache.dir
+/Users/gustavskyberg/Home/Programming/pong/build/CMakeFiles/rebuild_cache.dir
